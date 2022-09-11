@@ -26,4 +26,4 @@ Linux users should use pip3 instead.
 
 #### Retrieve Password 
 ![Alt text](/screenshot/retrieve.png?raw=true "Optional Title")
-
+.
