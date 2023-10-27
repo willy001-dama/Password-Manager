@@ -56,7 +56,8 @@ class DatabaseOps:
         INSERT INTO Login ('sitename', 'username', 'password', 'encrypted', 'owner') 
         VALUES ('{sitename}', '{username}', '{password}', '{encrypted}', {owner})
         """  # prepare sql statement
-        return self.cursor.execute(sql_statement)  # call cursor to execute query.
+        self.cursor.execute(sql_statement)  # call cursor to execute query.
+        self.conn.commit()  # commit changes to database
 
     def retrieve_all_records(self, user_id):
         """Grab all data from database for the lock in user"""
@@ -70,7 +71,6 @@ class DatabaseOps:
         sql_statement = f"""SELECT * FROM Login WHERE sitename='{sitename}' AND owner = {user_id}"""
         result = self.cursor.execute(sql_statement)  # call cursor to execute query
         return result.fetchone()  # return result
-
 
     def delete_single_record(self, pk, owner):
         """delete a single entry from the db. requires a site name"""
@@ -91,7 +91,7 @@ class DatabaseOps:
 obj = DatabaseOps()
 # "INSERT INTO Term (name) VALUES ('Second')",
 # "INSERT INTO Term (name) VALUES ('Third')"
-obj.save_login_details('Dama', '123456')
+# obj.save_login_details('Dama', '123456')
 # obj.insert_record("INSERT INTO Subject (name, class) VALUES ('Mathematics', 'JSS 1');")
 # obj.insert_record("INSERT INTO Subject (name, class) VALUES ('Basic Science', 'JSS 1');")
 # obj.conn.commit()
