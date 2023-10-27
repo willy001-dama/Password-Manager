@@ -31,7 +31,7 @@ class MainMenu(widget.QWidget):
         self.right_window_holder.setCurrentIndex(0)
         self.current = 0
         self.style_active = """
-        QPushButton#menu_button{background:rgba(41, 128, 140,1);;color:white;}
+        QPushButton#menu_button{background:rgba(41, 128, 140,1);color:white;}
         QPushButton#menu_button:hover{
         background:rgba(41, 128, 140, 0.7);
         color:white;
@@ -73,7 +73,7 @@ class MainMenu(widget.QWidget):
         self.logins = widget.QPushButton(text="Logins")
         self.logins.clicked.connect(lambda: self.switch_page1(0))
         self.logins.setObjectName("menu_button")
-        self.logins.setFixedWidth(260)
+        self.logins.setFixedWidth(220)
         #
         # add_student = widget.QPushButton(text="-> View ")
         # add_student.setObjectName("menu_button")
@@ -82,7 +82,7 @@ class MainMenu(widget.QWidget):
         self.payment = widget.QPushButton(text="Payments")
         self.payment.setObjectName("menu_button")
         self.payment.clicked.connect(lambda: self.switch_page1(1))
-        self.payment.setFixedWidth(260)
+        self.payment.setFixedWidth(220)
 
         self.note = widget.QPushButton(text="Secure Note")
         self.note.clicked.connect(lambda: self.switch_page1(2))
@@ -114,9 +114,10 @@ class MainMenu(widget.QWidget):
         left_side.addWidget(self.note)
         left_side.addWidget(draw_line.QHSeparationLine())
         left_side.addWidget(self.generate_pass)
+        left_side.addStretch()
         left_side.addWidget(self.test_pass)
         # left_side.addWidget(view_record)
-        left_side.addStretch()
+        # left_side.addStretch()
 
         # self.right_window_holder.addWidget(student_info.StudentInfo())
         # self.right_window_holder.setCurrentIndex(1)
