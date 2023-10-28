@@ -23,8 +23,9 @@ class PasswordList(QFrame):
                               "background:rgba(41, 128, 140,1);color:white;font-weight:bold;")
         change_pass = QPushButton("Change Password")
         change_pass.clicked.connect(self.update_password)
-        change_pass.setStyleSheet("padding:8px;border-radius:0px;"
-                                  "background:rgba(41, 128, 140,1);color:white;font-weight:bold;")
+        change_pass.setStyleSheet("padding:8px;border-radius:3px;"
+                                  "background:white;color:rgba(41, 128, 140,1);"
+                                  "font-weight:bold;border:1px solid rgba(41, 128, 140,1);")
 
         # menu_layout.addWidget(session_label)
         # menu_layout.addWidget(QVSeparationLine())
@@ -43,26 +44,28 @@ class PasswordList(QFrame):
         def btn_click():
             print("hello")
 
-        for row in range(2, 10, 2):
+        record = self.database_handle.retrieve_all_records(1)
+
+        for index, logins in enumerate(record):
             frame = QVBoxLayout()
-            site_value = QLabel("google.com")
+            site_value = QLabel(logins[1])
             site_value.setStyleSheet("font-size:20px; font-weight:bold;")
 
-            username_value = QLabel("Dama Michael")
+            username_value = QLabel(logins[2])
             username_value.setStyleSheet("font-size:10px;")
 
             frame.addWidget(site_value)
             frame.addWidget(username_value)
 
-            password.addLayout(frame, row, 0)
+            password.addLayout(frame, index + 2, 0)
 
-            password.addWidget(QLabel("Two Days Ago"), row, 1)
+            password.addWidget(QLabel("Two Days Ago"), index + 2, 1)
             action_button = QPushButton("....")
             action_button.setStyleSheet("border:none;font-size:20px;cursor:hand;")
             action_button.setFixedWidth(40)
             action_button.clicked.connect(btn_click)
-            password.addWidget(action_button, row, 2)
-            password.addWidget(draw_line.QHSeparationLine(), row + 1, 0, 1, 3, Qt.AlignLeft)
+            password.addWidget(action_button, index + 2, 2)
+            password.addWidget(draw_line.QHSeparationLine(), index + 3 + 1, 0, 1, 3, Qt.AlignLeft)
 
         main_layout.addLayout(menu_layout)
         main_layout.addWidget(QHSeparationLine())
@@ -74,6 +77,7 @@ class PasswordList(QFrame):
     def add_new_login(self):
         app = NewPassword(self, self.database_handle)
         app.open()
+        self.update()
 
     def update_password(self):
         win = UpdatePassword(self, self.database_handle)
@@ -105,6 +109,9 @@ class NewPassword(QDialog):
         self.password.setPlaceholderText("Enter Password")
         submit_btn = QPushButton("Add Login")
         submit_btn.setObjectName("Add Login")
+        submit_btn.setStyleSheet("padding:8px;border-radius:3px;"
+                                 "background:white;color:rgba(41, 128, 140,1);"
+                                 "font-weight:bold;border:1px solid rgba(41, 128, 140,1);")
         submit_btn.clicked.connect(self.add_password)
         stat_frame = QHBoxLayout()
         label = QLabel("Encrypt Password?")
@@ -128,11 +135,11 @@ class NewPassword(QDialog):
         encrypt = self.encrypt_data.isChecked()
         if site_name and username and password:
             self.database_handle.save_record(site_name, username, password, encrypt, owner=1)
-            QMessageBox.information(self, 'Success', "Logins Added sucessfully")
+            QMessageBox.information(self, 'Success', "Logins Added successfully")
 
         else:
             QMessageBox.information(self, 'Error Occur', "All fields most be filled!")
-        self.destroy()
+        self.hide()
 
 
 class UpdatePassword(QDialog):
@@ -142,25 +149,36 @@ class UpdatePassword(QDialog):
         super(UpdatePassword, self).__init__(parent)
         self.database_handle = database_handle
         self.setFixedWidth(320)
-        self.setWindowTitle("Set Current Term")
+        self.setWindowTitle("Update Password")
         self.setStyleSheet("QDialog{background:white;}")
         # create widget and layout
         layout = QVBoxLayout()
-        self.term_entry = QComboBox()
-        self.term_entry.addItems(["First", "Second", "Third"])
-        self.term_entry.setStyleSheet("padding:3px;font-size:15px;color:gray;"
-                                      "margin-top:10px;"
-                                      "border-radius:1px;border:1px solid grey;")
-        self.term_entry.setPlaceholderText("Set Current Term")
+        self.login_selection = QComboBox()
+        record = self.database_handle.retrieve_all_records(1)
+        for logins in record:
+            self.login_selection.addItem(logins[1])
+        self.login_selection.setStyleSheet("padding:3px;font-size:15px;color:rgba(41, 128, 140,1);"
+                                           "margin-top:10px;"
+                                           "border-radius:1px;border:1px solid grey;")
+        self.login_selection.setPlaceholderText("Select Site To Update")
+        self.password = QLineEdit()
+        self.password.setObjectName('entry')
+        self.password.setPlaceholderText("Enter Password")
+        self.password.setStyleSheet("padding:4px;border-radius:2px;color:rgba(41, 128, 140,1);")
         submit_btn = QPushButton("Submit")
         submit_btn.setObjectName("submit")
         submit_btn.clicked.connect(self.updated_term)
-        layout.addWidget(self.term_entry)
+        layout.addWidget(self.login_selection)
+        layout.addWidget(self.password)
         layout.addWidget(submit_btn)
+        style = """QPushButton#submit{padding:8px;border-radius:2px;
+                            background:white;color:rgba(41, 128, 140,1);
+                            font-weight:bold;border:1px solid rgba(41, 128, 140,1);}"""
+        self.setStyleSheet(style)
         self.setLayout(layout)
 
     def updated_term(self):
-        term = self.term_entry.currentText()
+        term = self.login_selection.currentText()
         sql = f"UPDATE Term SET status = 'current' WHERE name = '{term}';"
         self.database_handle.run_sql(sql)
         QMessageBox.information(self, 'Success', "Term Updated Successfully")
