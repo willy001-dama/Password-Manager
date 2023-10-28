@@ -1,15 +1,16 @@
 import os.path
 import sqlite3
-import pathlib
 from pathlib import Path
+
+import encryptor
 
 
 class DatabaseOps:
     def __init__(self):
         file_path = Path(__file__).resolve().parent
         self.conn = sqlite3.connect(os.path.join(file_path, "23storage.sqlite3"))
-        print("connection es")
         self.cursor = self.conn.cursor()
+        self.encrypt_handle = encryptor.Encryptor()
         self.set_up()
 
     def set_up(self):
@@ -52,6 +53,7 @@ class DatabaseOps:
 
     def save_record(self, sitename, username, password, encrypted, owner):
         """save record to db"""
+        password = self.encrypt_handle.encrypt(password)
         sql_statement = f"""
         INSERT INTO Login ('sitename', 'username', 'password', 'encrypted', 'owner') 
         VALUES ('{sitename}', '{username}', '{password}', '{encrypted}', {owner})
@@ -80,15 +82,18 @@ class DatabaseOps:
 
     def update_record(self, pk, sitename, username, password, encrypted, owner):
         """method to update records in the database given the pk"""
+        password = self.encrypt_handle.encrypt(password)
         sql_statement = f"""
                 UPDATE Login SET ('sitename', 'username', 'password', 'encrypted', 'owner') 
                 =('{sitename}', '{username}', '{password}', '{encrypted}',  '{owner}') WHERE pk={pk}
                 """  # prepare sql statement
         self.cursor.execute(sql_statement)  # call cursor to execute query.
+        self.conn.commit()
         return None
 
     def update_password(self, sitename, password, owner):
         """method to update password in the database given the sitename"""
+        password = self.encrypt_handle.encrypt(password)
         sql_statement = f"""
                 UPDATE Login SET password='{password}' WHERE sitename='{sitename}' AND owner='{owner}'
                 """
