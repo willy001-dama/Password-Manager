@@ -60,7 +60,7 @@ class DatabaseOps:
         self.conn.commit()  # commit changes to database
 
     def retrieve_all_records(self, user_id):
-        """Grab all data from database for the lock in user"""
+        """Grab all data from database for the logged-in user"""
         # prepared sql query
         sql_statement = f'SELECT * FROM Login WHERE owner = {user_id}'
         result = self.cursor.execute(sql_statement)  # call cursor to execute query
@@ -85,6 +85,15 @@ class DatabaseOps:
                 =('{sitename}', '{username}', '{password}', '{encrypted}',  '{owner}') WHERE pk={pk}
                 """  # prepare sql statement
         self.cursor.execute(sql_statement)  # call cursor to execute query.
+        return None
+
+    def update_password(self, sitename, password, owner):
+        """method to update password in the database given the sitename"""
+        sql_statement = f"""
+                UPDATE Login SET password='{password}' WHERE sitename='{sitename}' AND owner='{owner}'
+                """
+        self.cursor.execute(sql_statement)  # call cursor to execute query.
+        self.conn.commit()
         return None
 
 
