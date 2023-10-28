@@ -138,7 +138,7 @@ class NewPassword(QDialog):
             QMessageBox.information(self, 'Success', "Logins Added successfully")
 
         else:
-            QMessageBox.information(self, 'Error Occur', "All fields most be filled!")
+            QMessageBox.warning(self, 'Error Occurred', "All fields most be filled!")
         self.hide()
 
 
@@ -178,8 +178,12 @@ class UpdatePassword(QDialog):
         self.setLayout(layout)
 
     def updated_term(self):
-        term = self.login_selection.currentText()
-        sql = f"UPDATE Term SET status = 'current' WHERE name = '{term}';"
-        self.database_handle.run_sql(sql)
-        QMessageBox.information(self, 'Success', "Term Updated Successfully")
-        self.destroy()
+        site_name = self.login_selection.currentText()
+        password = self.password.text()
+        if not password:
+            QMessageBox.warning(self, 'Warning', "Password field cannot be empty")
+            return
+
+        self.database_handle.update_password(site_name, password, 1)
+        QMessageBox.information(self, 'Success', "Password Updated Successfully")
+        self.hide()
