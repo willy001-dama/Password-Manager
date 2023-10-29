@@ -173,9 +173,9 @@ class MainMenu(widget.QWidget):
             self.generate_pass.setStyleSheet(self.style_non_active)
 
 
-with open("style.qss") as file:
-    style = file.read()
-#
+# with open("style.qss") as file:
+#     style = file.read()
+# #
 # win = widget.QApplication(sys.argv)
 # my_app = MainMenu()
 # my_app.show()
