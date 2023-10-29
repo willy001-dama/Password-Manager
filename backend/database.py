@@ -2,7 +2,7 @@ import os.path
 import sqlite3
 from pathlib import Path
 
-import encryptor
+from backend import encryptor
 
 
 class DatabaseOps:
