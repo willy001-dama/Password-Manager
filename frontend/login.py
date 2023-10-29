@@ -4,6 +4,7 @@ from PySide6 import QtGui, QtCore
 from PySide6.QtWidgets import QMainWindow, QStackedWidget
 
 from backend import database
+from frontend import draw_line
 from frontend.dashboard import MainMenu
 
 
@@ -13,7 +14,7 @@ class MainApp(QMainWindow):
         self.setWindowTitle("Password Warehouse")
         self.setWindowIcon(QtGui.QIcon("images/icon.png"))
         self.setFixedSize(700, 550)
-        self.setStyleSheet("background:white;margin:0px;")
+        self.setStyleSheet("QMainWindow{background:white;}")
         self.init_ui()
         self.show()
 
@@ -21,19 +22,19 @@ class MainApp(QMainWindow):
         self.central_widget = QStackedWidget()
         self.setCentralWidget(self.central_widget)
 
-        self.login_screen = LoginPage()
-        self.main_screen = MainMenu()
+        self.login_screen = LoginPage(self)
+        # self.main_screen = MainMenu()
 
         self.central_widget.addWidget(self.login_screen)
-        self.central_widget.addWidget(self.main_screen)
+        # self.central_widget.addWidget(self.main_screen)
 
         self.central_widget.setCurrentWidget(self.login_screen)
 
 
 class LoginPage(widget.QWidget):
-    def __init__(self):
+    def __init__(self, parent):
         super(LoginPage, self).__init__()
-        self.setContentsMargins(0, 0, 0, 0)
+        self.parent = parent
         main_layout = widget.QVBoxLayout(self)  # main layout
 
         image = QtGui.QPixmap("../images/lock.jfif") # load image
@@ -43,46 +44,34 @@ class LoginPage(widget.QWidget):
 
         login_center = widget.QVBoxLayout() # create layout for form
         # ---------------------------------------------------------------
-        label1 = widget.QLabel("Username Field")
-        label1.setStyleSheet("""margin-top:10px;font-size:15px;""")
+
         self.entry1 = widget.QLineEdit()
         self.entry1.setFixedWidth(400)
         self.entry1.setPlaceholderText("Enter Username")
-        self.entry1.setStyleSheet(
-            """
-            padding:5px;font-size:20px;
-            color:brown;margin-top:10px;
-            border-radius:5px;border:1px solid grey;""")
+        self.entry1.setObjectName('entry')
 
-        label2 = widget.QLabel("Password Field")
-        label2.setStyleSheet("""margin-top:10px;font-size:15px;""")
         self.entry2 = widget.QLineEdit()
         self.entry2.setPlaceholderText("Enter Your Password")
         self.entry2.setEchoMode(widget.QLineEdit.Password)
-        self.entry2.setStyleSheet(
-            """
-            padding:5px;font-size:20px;
-            color:gray;margin-top:10px;
-            border-radius:5px;border:1px solid grey;""")
+        self.entry2.setObjectName('entry')
         self.entry2.setFixedWidth(400)
+
         login_btn = widget.QPushButton("Login")
         login_btn.clicked.connect(self.validate_login)
-        login_btn.setStyleSheet(
-            """
-            padding:5px;font-size:15px;
-            margin-top:10px;
-            border-radius:5px;border:1px solid grey;""")
+        login_btn.setObjectName('login')
 
         sub_layout = widget.QHBoxLayout()  # sub layout for buttons
         forgot_pass = widget.QPushButton("Recover Password")
-        forgot_pass.setStyle
+        forgot_pass.setObjectName("little")
         register = widget.QPushButton("Register Here")
+        register.setObjectName('little')
         sub_layout.addWidget(forgot_pass)
         sub_layout.addWidget(register)
         #  Position widgets
         login_center.addWidget(self.entry1)
         login_center.addWidget(self.entry2)
         login_center.addWidget(login_btn)
+        login_center.addWidget(draw_line.QHSeparationLine())
         login_center.addLayout(sub_layout)
         login_center.setAlignment(QtCore.Qt.AlignCenter)
 
@@ -94,7 +83,19 @@ class LoginPage(widget.QWidget):
         main_layout.addStretch(1)
         main_layout.addLayout(login_center)
         main_layout.addStretch(2)
-        self.setStyleSheet("background:white")
+        style = """
+            QPushButton#login{padding:10px;font-size:15px;
+            margin-top:10px;background:rgba(41, 128, 140,1);
+            color:white;border-radius:5px;border:1px solid rgba(41, 128, 140,1);
+            font-weight:bold;}
+            
+            QLineEdit#entry{padding:5px;font-size:20px;
+            color:rgba(41, 128, 140,1);margin-top:10px;
+            border-radius:5px;border:1px solid grey;}
+            
+            QPushButton#little{color:rgba(41, 128, 140,1);padding:5px}
+            """
+        self.setStyleSheet(style)
         self.setLayout(main_layout)  # set main layout
 
     def validate_login(self):
@@ -106,6 +107,9 @@ class LoginPage(widget.QWidget):
             login = database.DatabaseOps().login(username, password)
             if login and login == 1:
                 widget.QMessageBox.information(self, "Success", "Login Successful")
+                self.parent.central_widget.addWidget(MainMenu())
+                self.parent.central_widget.setCurrentIndex(1)
+
             else:
                 widget.QMessageBox.warning(self, "Error", "Incorrect Login Details. Try Again!")
             print(login)
