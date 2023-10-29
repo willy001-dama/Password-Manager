@@ -1,41 +1,47 @@
 import sys
 from PySide6 import QtWidgets as widget
 from PySide6 import QtGui, QtCore
+from PySide6.QtWidgets import QMainWindow, QStackedWidget
+
 from backend import database
+from frontend.dashboard import MainMenu
 
 
-class App(widget.QWidget):
+class MainApp(QMainWindow):
     def __init__(self):
-        super(App, self).__init__()
-        print(self.windowTitle)
-        self.setStyleSheet("background:#f3f3f3;")
+        super().__init__()
         self.setWindowTitle("Password Warehouse")
-        self.setWindowIcon(QtGui.QIcon("icon.png"))
+        self.setWindowIcon(QtGui.QIcon("images/icon.png"))
         self.setFixedSize(700, 550)
+        self.setStyleSheet("background:white;margin:0px;")
+        self.init_ui()
+        self.show()
 
-        main_layout = widget.QVBoxLayout(self)
-        header_layout = widget.QHBoxLayout()
-        image = QtGui.QPixmap("images/nsuk.png")
-        login_image = QtGui.QPixmap("bg.png")
-        login_image = login_image.scaled(500, 300)
+    def init_ui(self):
+        self.central_widget = QStackedWidget()
+        self.setCentralWidget(self.central_widget)
 
-        text1 = widget.QLabel()
-        text1.setPixmap(image)
-        text2 = widget.QLabel("Password Warehouse")
-        text2.setStyleSheet(
-            """
-                padding:50px;font-size:20px;
-                font-style:bold;""")
-        header_layout.addWidget(text1)
-        header_layout.addStretch()
-        header_layout.addWidget(text2)
-        header_layout.addStretch()
-        # create layout for both side of the body
-        body_layout = widget.QHBoxLayout()
-        left_body = widget.QVBoxLayout()
-        right_body = widget.QHBoxLayout()
+        self.login_screen = LoginPage()
+        self.main_screen = MainMenu()
 
-        # left side of the login body
+        self.central_widget.addWidget(self.login_screen)
+        self.central_widget.addWidget(self.main_screen)
+
+        self.central_widget.setCurrentWidget(self.login_screen)
+
+
+class LoginPage(widget.QWidget):
+    def __init__(self):
+        super(LoginPage, self).__init__()
+        self.setContentsMargins(0, 0, 0, 0)
+        main_layout = widget.QVBoxLayout(self)  # main layout
+
+        image = QtGui.QPixmap("../images/lock.jfif") # load image
+        image_label = widget.QLabel()
+        image_label.setPixmap(image)  # display image using label
+        image_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        login_center = widget.QVBoxLayout() # create layout for form
         # ---------------------------------------------------------------
         label1 = widget.QLabel("Username Field")
         label1.setStyleSheet("""margin-top:10px;font-size:15px;""")
@@ -67,37 +73,28 @@ class App(widget.QWidget):
             margin-top:10px;
             border-radius:5px;border:1px solid grey;""")
 
-        sub_layout = widget.QHBoxLayout()
+        sub_layout = widget.QHBoxLayout()  # sub layout for buttons
         forgot_pass = widget.QPushButton("Recover Password")
         forgot_pass.setStyle
         register = widget.QPushButton("Register Here")
         sub_layout.addWidget(forgot_pass)
         sub_layout.addWidget(register)
-        # left_body.addWidget(label1)
-        left_body.addWidget(self.entry1)
-        # left_body.addWidget(label2)
-        left_body.addWidget(self.entry2)
-        left_body.addWidget(login_btn)
-        left_body.addLayout(sub_layout)
-        left_body.setAlignment(QtCore.Qt.AlignCenter)
+        #  Position widgets
+        login_center.addWidget(self.entry1)
+        login_center.addWidget(self.entry2)
+        login_center.addWidget(login_btn)
+        login_center.addLayout(sub_layout)
+        login_center.setAlignment(QtCore.Qt.AlignCenter)
 
         # right part of the login body
         # ------------------------------------------------------------------
-        image_label = widget.QLabel()
-        image_label.setPixmap(login_image)
-        right_body.addWidget(image_label)
-
         # add head and body layout to the main layout
-        body_layout.addStretch()
-        body_layout.addLayout(right_body)
-        body_layout.addLayout(left_body)
-        body_layout.addStretch()
 
-        main_layout.addLayout(header_layout)
+        main_layout.addWidget(image_label)
         main_layout.addStretch(1)
-        main_layout.addLayout(body_layout)
+        main_layout.addLayout(login_center)
         main_layout.addStretch(2)
-        self.setStyleSheet("background-color:red;")
+        self.setStyleSheet("background:white")
         self.setLayout(main_layout)  # set main layout
 
     def validate_login(self):
@@ -115,7 +112,7 @@ class App(widget.QWidget):
 
 
 win = widget.QApplication(sys.argv)
-my_app = App()
+my_app = MainApp()
 my_app.resize(600, 200)
 my_app.show()
 win.exec()
