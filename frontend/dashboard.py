@@ -26,7 +26,7 @@ class MainMenu(widget.QWidget):
         self.right_window_holder = widget.QStackedWidget()
         self.right_window_holder.addWidget(password.PasswordList(self.database_handle))
         self.right_window_holder.addWidget(payment.PaymentInfo(self.database_handle))
-        self.right_window_holder.addWidget(note.Note(self.database_handle))
+        self.right_window_holder.addWidget(note.NoteList(self.database_handle))
         # self.right_window_holder.addWidget(result_menu.Result(self.database_handle))
         self.right_window_holder.setCurrentIndex(0)
         self.current = 0
@@ -53,6 +53,9 @@ class MainMenu(widget.QWidget):
             }
         
         """
+        with open("style.qss") as file:
+            style = file.read()
+        self.setStyleSheet(style)
         # build the UI
         self.buildUi()
 
@@ -66,7 +69,7 @@ class MainMenu(widget.QWidget):
         left_side = widget.QVBoxLayout()
         # -------------------- left side button and text here
 
-        label = widget.QLabel("Administrator")
+        label = widget.QLabel("Welcome! Dama")
         # label.setPixmap(QtGui.QPixmap("images/retouch.pngg").scaled(100, 100))
         label.setAlignment(QtCore.Qt.AlignCenter)
 
@@ -172,9 +175,9 @@ class MainMenu(widget.QWidget):
 
 with open("style.qss") as file:
     style = file.read()
-
-win = widget.QApplication(sys.argv)
-my_app = MainMenu()
-my_app.show()
-win.setStyleSheet(style)
-win.exec()
+#
+# win = widget.QApplication(sys.argv)
+# my_app = MainMenu()
+# my_app.show()
+# win.setStyleSheet(style)
+# win.exec()
