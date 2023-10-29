@@ -1,3 +1,4 @@
+from PySide6 import QtCore
 from PySide6.QtWidgets import QPushButton, QLabel, \
     QLineEdit, QComboBox, QFrame, QVBoxLayout, QHBoxLayout, \
     QHeaderView, QTableWidget, QTableWidgetItem, QMessageBox, QDialog, QCheckBox, QGridLayout
@@ -41,8 +42,13 @@ class PasswordList(QFrame):
         password.addWidget(name_label, 0, 0)
         password.addWidget(created_on, 0, 1)
 
-        def btn_click():
-            print("hello")
+        def btn_click(event=None, hello=None):
+            print(event, hello)
+            x = event.pos().x()
+            y = event.pos().y()
+            print(dir(event))
+            print(x,y, event.globalX(), event.globalY(), event.globalPosition())
+            ActionButton(self, event.globalX(), event.globalY())
 
         record = self.database_handle.retrieve_all_records(1)
 
@@ -60,11 +66,12 @@ class PasswordList(QFrame):
             password.addLayout(frame, index + 2, 0)
 
             password.addWidget(QLabel("Two Days Ago"), index + 2, 1)
-            action_button = QPushButton("....")
-            action_button.setStyleSheet("border:none;font-size:20px;cursor:hand;")
-            action_button.setFixedWidth(40)
-            action_button.clicked.connect(btn_click)
-            password.addWidget(action_button, index + 2, 2)
+            self.action_button = QPushButton("....")
+            self.action_button.setStyleSheet("border:none;font-size:20px;cursor:hand;")
+            self.action_button.setFixedWidth(40)
+            # self.action_button.clicked.connect(lambda text=logins[0]: btn_click(text))
+            self.action_button.mousePressEvent = lambda:btn_click(logins[0])
+            password.addWidget(self.action_button, index + 2, 2)
             password.addWidget(draw_line.QHSeparationLine(), index + 3 + 1, 0, 1, 3, Qt.AlignLeft)
 
         main_layout.addLayout(menu_layout)
@@ -187,3 +194,38 @@ class UpdatePassword(QDialog):
         self.database_handle.update_password(site_name, password, 1)
         QMessageBox.information(self, 'Success', "Password Updated Successfully")
         self.hide()
+
+
+class ActionButton(QDialog):
+    """Dialog window for Updating current term"""
+
+    def __init__(self, parent, point_x, point_y):
+        super(ActionButton, self).__init__(parent)
+        # self.database_handle = database_handle
+        self.setFixedWidth(120)
+        self.setWindowTitle("Update Password")
+
+        # create widget and layout
+        layout = QVBoxLayout()
+        view_btn = QPushButton("View Login")
+        update_btn = QPushButton("Update Login")
+        update_btn.clicked.connect(self.update_login)
+        delete_btn = QPushButton("Delete Login")
+        delete_btn.clicked.connect(self.delete_login)
+        layout.addWidget(view_btn)
+        layout.addWidget(update_btn)
+        layout.addWidget(delete_btn)
+        self.setLayout(layout)
+        self.setAttribute(Qt.WA_QuitOnClose)
+        self.setWindowFlags(Qt.Popup)
+        # self.setWindowFlags(Qt.)
+        self.move(point_x - 100, point_y)
+        self.setStyleSheet("QDialog{background:white;border-radius:20px};"
+                           "QPushButton{background:red;border:none;color:rgba(41, 128, 140,1);}")
+        self.show()
+
+    def delete_login(self):
+        print("have been clicked")
+
+    def update_login(self):
+        print("hello here")
