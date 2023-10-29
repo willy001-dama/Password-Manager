@@ -15,6 +15,7 @@ class PasswordList(QFrame):
         super(PasswordList, self).__init__()
         self.database_handle = database_handle
         self.setStyleSheet("QFrame{background:white;}")
+        self.setContentsMargins(0, 0, 0, 0)
         main_layout = QVBoxLayout()
         menu_layout = QHBoxLayout()
 
