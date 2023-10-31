@@ -13,20 +13,20 @@ from backend.database import DatabaseOps
 
 class MainMenu(widget.QWidget):
 
-    def __init__(self, parent=None):
-        super(MainMenu, self).__init__(parent)
+    def __init__(self, user=[2, 'Dama']):
+        super(MainMenu, self).__init__()
         self.setWindowTitle("Main Menu")
         self.setWindowIcon(QtGui.QIcon("../images/icon.png"))
         self.setContentsMargins(0, 0, 0, 0)
         self.setFixedSize(700, 550)
-        # self.showMaximized()
+        self.user = user
         # create DB instance and pass to different pages
         self.database_handle = DatabaseOps()
         # create instance of other window and arrange in stack
         self.right_window_holder = widget.QStackedWidget()
-        self.right_window_holder.addWidget(password.PasswordList(self.database_handle))
+        self.right_window_holder.addWidget(password.PasswordList(self.database_handle, user))
         self.right_window_holder.addWidget(payment.PaymentInfo(self.database_handle))
-        self.right_window_holder.addWidget(note.NoteList(self.database_handle))
+        self.right_window_holder.addWidget(note.NoteList(self.database_handle, user))
         # self.right_window_holder.addWidget(result_menu.Result(self.database_handle))
         self.right_window_holder.setCurrentIndex(0)
         self.current = 0
@@ -69,7 +69,7 @@ class MainMenu(widget.QWidget):
         left_side = widget.QVBoxLayout()
         # -------------------- left side button and text here
 
-        label = widget.QLabel("Welcome! Dama")
+        label = widget.QLabel(f"Welcome! {self.user[1]}")
         # label.setPixmap(QtGui.QPixmap("images/retouch.pngg").scaled(100, 100))
         label.setAlignment(QtCore.Qt.AlignCenter)
 
@@ -176,8 +176,8 @@ class MainMenu(widget.QWidget):
 with open("style.qss") as file:
     style = file.read()
 #
-# win = widget.QApplication(sys.argv)
-# my_app = MainMenu()
-# my_app.show()
-# win.setStyleSheet(style)
-# win.exec()
+win = widget.QApplication(sys.argv)
+my_app = MainMenu()
+my_app.show()
+win.setStyleSheet(style)
+win.exec()
