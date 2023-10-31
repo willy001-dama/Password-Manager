@@ -3,27 +3,30 @@ from functools import partial
 from PySide6 import QtCore
 from PySide6.QtWidgets import QPushButton, QLabel, \
     QLineEdit, QComboBox, QFrame, QVBoxLayout, QHBoxLayout, \
-    QHeaderView, QTableWidget, QTableWidgetItem, QMessageBox, QDialog, QCheckBox, QGridLayout
+    QHeaderView, QTableWidget, QTableWidgetItem, QMessageBox, QDialog, QCheckBox, QGridLayout, QPlainTextEdit
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QPixmap, QIcon
 
 from draw_line import QHSeparationLine, QVSeparationLine
 from frontend import draw_line
 
 
 class NoteList(QFrame):
-    def __init__(self, database_handle):
+    def __init__(self, database_handle, user):
         super(NoteList, self).__init__()
         self.database_handle = database_handle
+        self.user = user
         self.setStyleSheet("QFrame{background:white;}")
         main_layout = QVBoxLayout()
         menu_layout = QHBoxLayout()
 
-        add_new = QPushButton("+ Add New")
+        add_new = QPushButton(" ADD NEW NOTE")
         add_new.clicked.connect(self.add_new_login)
-        add_new.setStyleSheet("padding:8px;border-radius:0px;"
-                              "background:rgba(41, 128, 140,1);color:white;font-weight:bold;")
+        add_new.setIcon(QIcon("../images/add.png"))
+        add_new.setStyleSheet("padding:8px;border-radius:10px;"
+                              "background:white;font-weight:bold;border:1px solid rgba(41, 128, 140,1);"
+                              )
         change_pass = QPushButton("Change Password")
         change_pass.clicked.connect(self.update_password)
         change_pass.setStyleSheet("padding:8px;border-radius:3px;"
@@ -43,38 +46,47 @@ class NoteList(QFrame):
         password = QGridLayout()
         password.addWidget(name_label, 0, 0)
         password.addWidget(created_on, 0, 1)
-        record = self.database_handle.retrieve_all_records(1)
+        record = self.database_handle.retrieve_all_records(self.user[0])
+        if record:
+            def btn_click(data):
+                print(data)
 
-        def btn_click(data):
-            print(data)
+            for index, logins in enumerate(record):
+                frame = QVBoxLayout()
+                site_value = QLabel(logins[1])
+                site_value.setStyleSheet("font-size:20px; font-weight:bold;")
 
-        for index, logins in enumerate(record):
-            frame = QVBoxLayout()
-            site_value = QLabel(logins[1])
-            site_value.setStyleSheet("font-size:20px; font-weight:bold;")
+                username_value = QLabel(logins[2])
+                username_value.setStyleSheet("font-size:10px;")
 
-            username_value = QLabel(logins[2])
-            username_value.setStyleSheet("font-size:10px;")
+                frame.addWidget(site_value)
+                frame.addWidget(username_value)
 
-            frame.addWidget(site_value)
-            frame.addWidget(username_value)
+                password.addLayout(frame, index + 2, 0)
 
-            password.addLayout(frame, index + 2, 0)
-
-            password.addWidget(QLabel("Two Days Ago"), index + 2, 1)
-            self.action_button = QPushButton(f"view")
-            self.action_button.setStyleSheet("background:white;color:rgba(41, 128, 140,1);"
-                                             "font-weight:bold;border:1px solid rgba(41, 128, 140,1);"
-                                             "border-radius:4px")
-            self.action_button.setFixedWidth(40)
-            self.action_button.clicked.connect(partial(btn_click, logins[0]))
-            password.addWidget(self.action_button, index + 2, 2)
-            password.addWidget(draw_line.QHSeparationLine(), index + 3 + 1, 0, 1, 3, Qt.AlignLeft)
+                password.addWidget(QLabel("Two Days Ago"), index + 2, 1)
+                self.action_button = QPushButton(f"view")
+                self.action_button.setStyleSheet("background:white;color:rgba(41, 128, 140,1);"
+                                                 "font-weight:bold;border:1px solid rgba(41, 128, 140,1);"
+                                                 "border-radius:4px")
+                self.action_button.setFixedWidth(40)
+                self.action_button.clicked.connect(partial(btn_click, logins[0]))
+                password.addWidget(self.action_button, index + 2, 2)
+                password.addWidget(draw_line.QHSeparationLine(), index + 3 + 1, 0, 1, 3, Qt.AlignLeft)
+        else:
+            password = QVBoxLayout()
+            image = QPixmap("../images/empty.jpg")  # load image
+            image_label = QLabel()
+            image_label.setPixmap(image)  # display image using label
+            image_label.setAlignment(QtCore.Qt.AlignCenter)
+            password.addStretch()
+            password.addWidget(image_label)
+            password.addStretch()
 
         main_layout.addLayout(menu_layout)
         main_layout.addWidget(QHSeparationLine())
         main_layout.addLayout(password)
-        main_layout.addStretch()
+        # main_layout.addStretch()
 
         self.setLayout(main_layout)
 
@@ -102,38 +114,27 @@ class NewPassword(QDialog):
         self.setStyleSheet("QDialog{background:white;}")
         # create widget and layout
         layout = QVBoxLayout()
-        self.sitename = QLineEdit()
-        self.sitename.setObjectName('entry')
-        self.sitename.setPlaceholderText("Enter Site Name")
-        self.username = QLineEdit()
-        self.username.setObjectName('entry')
-        self.username.setPlaceholderText("Enter Username")
-        self.password = QLineEdit()
-        self.password.setObjectName('entry')
-        self.password.setPlaceholderText("Enter Password")
+        self.title = QLineEdit()
+        self.title.setObjectName('entry')
+        self.title.setPlaceholderText("Enter Title Of text")
+        self.note = QPlainTextEdit()
+        self.note.setObjectName('entry')
+        self.note.setPlaceholderText("Type your note here")
         submit_btn = QPushButton("Add Login")
         submit_btn.setObjectName("Add Login")
         submit_btn.setStyleSheet("padding:8px;border-radius:3px;"
                                  "background:white;color:rgba(41, 128, 140,1);"
                                  "font-weight:bold;border:1px solid rgba(41, 128, 140,1);")
         submit_btn.clicked.connect(self.add_password)
-        stat_frame = QHBoxLayout()
-        label = QLabel("Encrypt Password?")
-        label.setStyleSheet("font-size:16px;padding-top:5px;")
-        self.encrypt_data = QCheckBox()
-        stat_frame.addWidget(label)
-        stat_frame.addWidget(self.encrypt_data)
-        layout.addWidget(self.sitename)
-        layout.addWidget(self.username)
-        layout.addWidget(self.password)
+        layout.addWidget(self.title)
+        layout.addWidget(self.note)
         # layout.addWidget(self.sitename)
 
-        layout.addLayout(stat_frame)
         layout.addWidget(submit_btn)
         self.setLayout(layout)
 
     def add_password(self):
-        site_name = self.sitename.text()
+        site_name = self.title.text()
         username = self.username.text()
         password = self.password.text()
         encrypt = self.encrypt_data.isChecked()
