@@ -47,7 +47,7 @@ class DatabaseOps:
             return 0  # return zero for failed
         else:  # if username exist, check if password matches
             if password == result[2]:  # compare the given and saved password
-                return result[0]  # return passed if they are the same
+                return [result[0], result[1]]  # return passed if they are the same
             else:
                 return 0  # return zero if not the same
 
