@@ -23,7 +23,6 @@ class MainApp(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         self.login_screen = LoginPage(self)
-        # self.main_screen = MainMenu()
 
         self.central_widget.addWidget(self.login_screen)
         # self.central_widget.addWidget(self.main_screen)
@@ -104,15 +103,15 @@ class LoginPage(widget.QWidget):
         if not username or not password:
             widget.QMessageBox.warning(self, "Error", "Fields can't be empty")
         else:
-            login = database.DatabaseOps().login(username, password)
-            if login and login == 1:
-                widget.QMessageBox.information(self, "Success", "Login Successful")
-                self.parent.central_widget.addWidget(MainMenu())
+            id = database.DatabaseOps().login(username, password)
+            if id:
+                widget.QMessageBox.information(self, "Success", f"Login Successful, {id[1]}")
+                self.parent.central_widget.addWidget(MainMenu(id))
                 self.parent.central_widget.setCurrentIndex(1)
 
             else:
                 widget.QMessageBox.warning(self, "Error", "Incorrect Login Details. Try Again!")
-            print(login)
+            print(id)
 
 
 win = widget.QApplication(sys.argv)
