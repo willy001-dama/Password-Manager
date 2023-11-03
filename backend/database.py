@@ -18,13 +18,26 @@ class DatabaseOps:
 
             "CREATE TABLE IF NOT EXISTS User (pk INTEGER PRIMARY KEY, username VARCHAR UNIQUE, 'password')",
             "CREATE TABLE IF NOT EXISTS Login (pk INTEGER PRIMARY KEY, sitename CHAR, username CHAR, password CHAR, encrypted CHAR, owner INTEGER)",
-            "CREATE TABLE IF NOT EXISTS Payments  (bank CHAR, pin CHAR)",
-            'CREATE TABLE IF NOT EXISTS Notes  (title CHAR, content CHAR)',
+            "CREATE TABLE IF NOT EXISTS Payments  (bank CHAR, pin CHAR, owner INTEGER)",
+            'CREATE TABLE IF NOT EXISTS Notes  (title CHAR, content CHAR, owner INTEGER)',
 
         ]
         for sql in sql_list:
             self.cursor.execute(sql)
             self.conn.commit()
+
+    def insert_record(self, sql_statement, values):
+        try:
+            self.cursor.execute(sql_statement, values)  # call cursor to execute query.
+            self.conn.commit()
+            return False
+        except sqlite3.IntegrityError:
+            return True
+
+    def fetch_record(self, sql_statement):
+        """function to execute the fetch record command"""
+        result = self.cursor.execute(sql_statement)  # call cursor to execute query.
+        return result
 
     def save_login_details(self, username, password):
         """save record to db"""
@@ -51,7 +64,7 @@ class DatabaseOps:
             else:
                 return 0  # return zero if not the same
 
-    def save_record(self, sitename, username, password, encrypted, owner):
+    def save_password(self, sitename, username, password, encrypted, owner):
         """save record to db"""
         password = self.encrypt_handle.encrypt(password)
         sql_statement = f"""
@@ -100,6 +113,7 @@ class DatabaseOps:
         self.cursor.execute(sql_statement)  # call cursor to execute query.
         self.conn.commit()
         return None
+
 
 
 obj = DatabaseOps()
