@@ -8,12 +8,12 @@ import password
 import payment
 import note
 
-from backend.database import DatabaseOps
+from backend.database_utils import DatabaseUtility
 
 
 class MainMenu(widget.QWidget):
 
-    def __init__(self, user=[2, 'Dama']):
+    def __init__(self, user=[1, 'Dama']):
         super(MainMenu, self).__init__()
         self.setWindowTitle("Main Menu")
         self.setWindowIcon(QtGui.QIcon("../images/icon.png"))
@@ -21,12 +21,12 @@ class MainMenu(widget.QWidget):
         self.setFixedSize(700, 550)
         self.user = user
         # create DB instance and pass to different pages
-        self.database_handle = DatabaseOps()
+        self.database_utility = DatabaseUtility()
         # create instance of other window and arrange in stack
         self.right_window_holder = widget.QStackedWidget()
-        self.right_window_holder.addWidget(password.PasswordList(self.database_handle, user))
-        self.right_window_holder.addWidget(payment.PaymentInfo(self.database_handle))
-        self.right_window_holder.addWidget(note.NoteList(self.database_handle, user))
+        self.right_window_holder.addWidget(password.PasswordList(self.database_utility, user))
+        self.right_window_holder.addWidget(payment.PaymentInfo(self.database_utility))
+        self.right_window_holder.addWidget(note.NoteList(self.database_utility, user))
         # self.right_window_holder.addWidget(result_menu.Result(self.database_handle))
         self.right_window_holder.setCurrentIndex(0)
         self.current = 0
