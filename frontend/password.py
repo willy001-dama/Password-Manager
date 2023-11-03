@@ -1,4 +1,5 @@
 from PySide6 import QtCore, QtGui
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QPushButton, QLabel, \
     QLineEdit, QComboBox, QFrame, QVBoxLayout, QHBoxLayout, \
     QHeaderView, QTableWidget, QTableWidgetItem, QMessageBox, QDialog, QCheckBox, QGridLayout
@@ -10,9 +11,9 @@ from frontend import draw_line
 
 
 class PasswordList(QFrame):
-    def __init__(self, database_handle, user):
+    def __init__(self, database_util, user):
         super(PasswordList, self).__init__()
-        self.database_handle = database_handle
+        self.database_util = database_util
         self.user = user
         self.setStyleSheet("QFrame{background:white;}")
         self.setContentsMargins(0, 0, 0, 0)
@@ -25,19 +26,27 @@ class PasswordList(QFrame):
                               "background:rgba(41, 128, 140,1);color:white;font-weight:bold;")
         change_pass = QPushButton("Change Password")
         change_pass.clicked.connect(self.update_password)
+        change_pass.setIcon(QIcon('../images/password.png'))
         change_pass.setStyleSheet("padding:8px;border-radius:3px;"
                                   "background:white;color:rgba(41, 128, 140,1);"
                                   "font-weight:bold;border:1px solid rgba(41, 128, 140,1);")
 
-        # menu_layout.addWidget(session_label)
-        # menu_layout.addWidget(QVSeparationLine())
-        # menu_layout.addWidget(term_label)
+        refresh_btn = QPushButton("Refresh")
+        refresh_btn.clicked.connect(self.refresh_btn)
+        refresh_btn.setIcon(QIcon('../images/refresh.png'))
+        refresh_btn.setStyleSheet("padding:8px;border-radius:3px;"
+                                  "background:white;color:rgba(41, 128, 140,1);"
+                                  "font-weight:bold;border:1px solid rgba(41, 128, 140,1);")
+
+
         menu_layout.addWidget(add_new)
         menu_layout.addWidget(change_pass)
+        menu_layout.addWidget(refresh_btn)
         menu_layout.addStretch()
         # menu_layout.addWidget()
         name_label = QLabel("NAME")
         created_on = QLabel("CREATED ON")
+
 
 
         def btn_click(event=None, hello=None):
@@ -48,7 +57,7 @@ class PasswordList(QFrame):
             print(x,y, event.globalX(), event.globalY(), event.globalPosition())
             ActionButton(self, event.globalX(), event.globalY())
 
-        record = self.database_handle.retrieve_all_records(user[0])
+        record = self.database_util.fetch_data("Login", user[0])
         if record:
             password = QGridLayout()
             password.addWidget(name_label, 0, 0)
@@ -93,14 +102,14 @@ class PasswordList(QFrame):
         self.setLayout(main_layout)
 
     def add_new_login(self):
-        app = NewPassword(self, self.database_handle, self.user)
+        app = NewPassword(self, self.database_util, self.user)
         app.open()
 
     def update_password(self):
-        win = UpdatePassword(self, self.database_handle)
+        win = UpdatePassword(self, self.database_util)
         win.open()
 
-    def update_student_callback(self):
+    def refresh_btn(self):
         pass
 
 
@@ -146,7 +155,7 @@ class NewPassword(QDialog):
         username = self.username.text()
         password = self.password.text()
         if site_name and username and password:
-            self.database_handle.save_record(site_name, username, password, owner=self.user[0])
+            self.database_handle.save_password(site_name, username, password, owner=self.user[0])
             QMessageBox.information(self, 'Success', "Logins Added successfully")
 
         else:
@@ -196,7 +205,7 @@ class UpdatePassword(QDialog):
             QMessageBox.warning(self, 'Warning', "Password field cannot be empty")
             return
 
-        self.database_handle.update_password(site_name, password, 1)
+        self.database_handle.refresh_btn(site_name, password, 1)
         QMessageBox.information(self, 'Success', "Password Updated Successfully")
         self.hide()
 
