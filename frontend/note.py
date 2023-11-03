@@ -13,9 +13,9 @@ from frontend import draw_line
 
 
 class NoteList(QFrame):
-    def __init__(self, database_handle, user):
+    def __init__(self, database_util, user):
         super(NoteList, self).__init__()
-        self.database_handle = database_handle
+        self.database_util = database_util
         self.user = user
         self.setStyleSheet("QFrame{background:white;}")
         main_layout = QVBoxLayout()
@@ -24,12 +24,12 @@ class NoteList(QFrame):
         add_new = QPushButton(" ADD NEW NOTE")
         add_new.clicked.connect(self.add_new_login)
         add_new.setIcon(QIcon("../images/add.png"))
-        add_new.setStyleSheet("padding:8px;border-radius:10px;"
+        add_new.setStyleSheet("padding:8px;border-radius:3px;"
                               "background:white;font-weight:bold;border:1px solid rgba(41, 128, 140,1);"
                               )
-        change_pass = QPushButton("Change Password")
-        change_pass.clicked.connect(self.update_password)
-        change_pass.setStyleSheet("padding:8px;border-radius:3px;"
+        regresh_btn = QPushButton("Refresh")
+        regresh_btn.clicked.connect(self.refresh_btn)
+        regresh_btn.setStyleSheet("padding:8px;border-radius:3px;"
                                   "background:white;color:rgba(41, 128, 140,1);"
                                   "font-weight:bold;border:1px solid rgba(41, 128, 140,1);")
 
@@ -37,7 +37,7 @@ class NoteList(QFrame):
         # menu_layout.addWidget(QVSeparationLine())
         # menu_layout.addWidget(term_label)
         menu_layout.addWidget(add_new)
-        menu_layout.addWidget(change_pass)
+        menu_layout.addWidget(regresh_btn)
         menu_layout.addStretch()
         # menu_layout.addWidget()
         name_label = QLabel("NAME")
@@ -46,12 +46,12 @@ class NoteList(QFrame):
         password = QGridLayout()
         password.addWidget(name_label, 0, 0)
         password.addWidget(created_on, 0, 1)
-        record = self.database_handle.retrieve_all_records(self.user[0])
-        if record:
+        self.record = self.database_util.fetch_data("Notes", self.user[0])
+        if self.record:
             def btn_click(data):
                 print(data)
 
-            for index, logins in enumerate(record):
+            for index, logins in enumerate(self.record):
                 frame = QVBoxLayout()
                 site_value = QLabel(logins[1])
                 site_value.setStyleSheet("font-size:20px; font-weight:bold;")
@@ -91,41 +91,37 @@ class NoteList(QFrame):
         self.setLayout(main_layout)
 
     def add_new_login(self):
-        app = NewPassword(self, self.database_handle)
+        app = NewNote(self, self.database_util, self.user)
         app.open()
         self.update()
 
-    def update_password(self):
-        win = UpdatePassword(self, self.database_handle)
-        win.open()
+    def refresh_btn(self):
+        self.update()
 
-    def update_student_callback(self):
-        pass
-
-
-class NewPassword(QDialog):
+class NewNote(QDialog):
     """Dialog window for adding new password"""
 
-    def __init__(self, parent, database_handle):
-        super(NewPassword, self).__init__(parent)
-        self.database_handle = database_handle
+    def __init__(self, parent, database_util, user):
+        super(NewNote, self).__init__(parent)
+        self.user = user
+        self.database_util = database_util
         self.setFixedWidth(320)
-        self.setWindowTitle("New Password")
+        self.setWindowTitle("New Note")
         self.setStyleSheet("QDialog{background:white;}")
         # create widget and layout
         layout = QVBoxLayout()
         self.title = QLineEdit()
         self.title.setObjectName('entry')
-        self.title.setPlaceholderText("Enter Title Of text")
+        self.title.setPlaceholderText("Enter Title Of Note")
         self.note = QPlainTextEdit()
         self.note.setObjectName('entry')
         self.note.setPlaceholderText("Type your note here")
-        submit_btn = QPushButton("Add Login")
+        submit_btn = QPushButton("Add Note")
         submit_btn.setObjectName("Add Login")
         submit_btn.setStyleSheet("padding:8px;border-radius:3px;"
                                  "background:white;color:rgba(41, 128, 140,1);"
                                  "font-weight:bold;border:1px solid rgba(41, 128, 140,1);")
-        submit_btn.clicked.connect(self.add_password)
+        submit_btn.clicked.connect(self.add_note)
         layout.addWidget(self.title)
         layout.addWidget(self.note)
         # layout.addWidget(self.sitename)
@@ -133,14 +129,13 @@ class NewPassword(QDialog):
         layout.addWidget(submit_btn)
         self.setLayout(layout)
 
-    def add_password(self):
-        site_name = self.title.text()
-        username = self.username.text()
-        password = self.password.text()
-        encrypt = self.encrypt_data.isChecked()
-        if site_name and username and password:
-            self.database_handle.save_record(site_name, username, password, encrypt, owner=1)
-            QMessageBox.information(self, 'Success', "Logins Added successfully")
+    def add_note(self):
+        note_title = self.title.text()
+        note_content = self.note.toPlainText()
+        print(note_title, note_content)
+        if note_title and note_content:
+            self.database_util.insert_note(note_title, note_content, owner=self.user[0])
+            QMessageBox.information(self, 'Success', "Note Added successfully")
 
         else:
             QMessageBox.warning(self, 'Error Occurred', "All fields most be filled!")
@@ -189,7 +184,7 @@ class UpdatePassword(QDialog):
             QMessageBox.warning(self, 'Warning', "Password field cannot be empty")
             return
 
-        self.database_handle.update_password(site_name, password, 1)
+        self.database_handle.refresh_btn(site_name, password, 1)
         QMessageBox.information(self, 'Success', "Password Updated Successfully")
         self.hide()
 
